@@ -1,0 +1,6 @@
+bcrypt
+maskpass
+peewee
+prettytable
+PyMySQL
+python-decouple
