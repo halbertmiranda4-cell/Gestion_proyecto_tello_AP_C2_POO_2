@@ -1,3 +1,5 @@
 opcion_invalida = 'Opción ingresada NO corresponde...\nIngrese nuevamente'
 menu_anterior = 'Volviendo al menú anterior.\n'
 en_construccion = 'Opción en construcción...\n'
+mensaje_error = 'Ha ocurrido un error: '
+operacion_cancelada = 'Operación cancelada.\n' 

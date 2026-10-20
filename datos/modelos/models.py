@@ -25,6 +25,8 @@ class Proyecto(BaseModel):
     nompro = CharField(column_name='NOMPRO', max_length=50)
     descripcion = CharField(column_name='DESCRIPCION', max_length=150, null=True)
     fecha_creacion = DateField(column_name='FECHA_CREACION', constraints=[SQL("DEFAULT curdate()")])
+    # Borrado lógico: 1 = habilitado, 0 = eliminado
+    habilitado = IntegerField(column_name='HABILITADO', constraints=[SQL('DEFAULT 1')], default=1)
 
     class Meta:
         table_name = 'proyecto'
@@ -47,6 +49,8 @@ class Lista(BaseModel):
     id_tablero = ForeignKeyField(column_name='ID_TABLERO', model=Tablero, field='id_tablero')
     posicion = IntegerField(column_name='POSICION')
     descriplist = CharField(column_name='DESCRIPLIST', max_length=150, null=True)
+    # Borrado lógico: 1 = habilitado, 0 = eliminado
+    habilitado = IntegerField(column_name='HABILITADO', constraints=[SQL('DEFAULT 1')], default=1)
 
     class Meta:
         table_name = 'lista'
@@ -58,6 +62,8 @@ class Usuarios(BaseModel):
     correo = CharField(column_name='CORREO', max_length=100, unique=True)
     contrasena = CharField(column_name='CONTRASENA', max_length=255)
     rut = CharField(column_name='RUT', max_length=12, unique=True)
+    # Borrado lógico: 1 = habilitado, 0 = deshabilitado
+    habilitado = IntegerField(column_name='HABILITADO', constraints=[SQL('DEFAULT 1')], default=1)
 
     class Meta:
         table_name = 'usuarios'
@@ -88,6 +94,8 @@ class Tarjeta(BaseModel):
     estado = CharField(column_name='ESTADO', max_length=20, constraints=[SQL("DEFAULT 'pendiente'")])
     posicion = IntegerField(column_name='POSICION')
     id_responsable = ForeignKeyField(column_name='ID_RESPONSABLE', model=UsuarioProyecto, field='id_usuario_proyecto', null=True)
+    # Borrado lógico: 1 = habilitado, 0 = eliminado
+    habilitado = IntegerField(column_name='HABILITADO', constraints=[SQL('DEFAULT 1')], default=1)
 
     class Meta:
         table_name = 'tarjeta'
@@ -126,5 +134,4 @@ class TarjetaEtiqueta(BaseModel):
         indexes = (
             (('id_tarjeta', 'id_etiqueta'), True),
         )
-        primary_key = CompositeKey('id_tarjeta', 'id_etiqueta')
-
+        primary_key = CompositeKey('id_tarjeta', 'id_etiqueta') 

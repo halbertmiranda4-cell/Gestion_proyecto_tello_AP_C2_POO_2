@@ -7,11 +7,15 @@ def buscar_tablero_por_proyecto(proyecto: Proyecto):
 
 
 def listado_listas(tablero: Tablero):
-    return list(Lista.select().where(Lista.id_tablero == tablero).order_by(Lista.posicion))
+    # Solo listas habilitadas, ordenadas por posición
+    return list(Lista
+                .select()
+                .where((Lista.id_tablero == tablero) & (Lista.habilitado == 1))
+                .order_by(Lista.posicion))
 
 
 def buscar_lista_por_id(id_lista: int):
-    return Lista.get_or_none(Lista.id_lista == id_lista)
+    return Lista.get_or_none((Lista.id_lista == id_lista) & (Lista.habilitado == 1))
 
 
 def siguiente_posicion_lista(tablero: Tablero) -> int:

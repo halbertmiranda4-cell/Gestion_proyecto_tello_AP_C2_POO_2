@@ -2,10 +2,18 @@ from datos.modelos.models import Usuarios
 from peewee import IntegrityError, OperationalError, DataError, PeeweeException
 
 
-def listado_usuarios():
-    usuarios = Usuarios.select().order_by(Usuarios.id_usuario)
+def listado_usuarios(habilitados: bool = True):
+    """Por defecto lista solo los habilitados; con habilitados=False lista los eliminados."""
+    usuarios = (Usuarios
+                .select()
+                .where(Usuarios.habilitado == int(habilitados))
+                .order_by(Usuarios.id_usuario))
     if usuarios:
         return usuarios
+
+
+def buscar_usuario_por_id(id_usuario: int):
+    return Usuarios.get_or_none(Usuarios.id_usuario == id_usuario)
 
 
 def buscar_usuario_por_correo(correo: str):

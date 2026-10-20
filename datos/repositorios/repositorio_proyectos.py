@@ -3,10 +3,12 @@ from datos.modelos.models import database, Proyecto, UsuarioProyecto, Usuarios
 
 
 def listado_proyectos():
-    # Cada proyecto con la cantidad de participantes (LEFT JOIN para incluir proyectos sin participantes)
+    # Solo proyectos habilitados, con la cantidad de participantes
+    # (LEFT JOIN para incluir proyectos sin participantes)
     proyectos = (Proyecto
                  .select(Proyecto, fn.COUNT(UsuarioProyecto.id_usuario_proyecto).alias('participantes'))
                  .join(UsuarioProyecto, JOIN.LEFT_OUTER, on=(UsuarioProyecto.id_proyecto == Proyecto.id_proyecto))
+                 .where(Proyecto.habilitado == 1)
                  .group_by(Proyecto.id_proyecto)
                  .order_by(Proyecto.id_proyecto))
     if proyectos:
@@ -14,11 +16,11 @@ def listado_proyectos():
 
 
 def buscar_proyecto_por_id(id_proyecto: int):
-    return Proyecto.get_or_none(Proyecto.id_proyecto == id_proyecto)
+    return Proyecto.get_or_none((Proyecto.id_proyecto == id_proyecto) & (Proyecto.habilitado == 1))
 
 
 def buscar_proyecto_por_nombre(nombre: str):
-    return Proyecto.get_or_none(Proyecto.nompro == nombre)
+    return Proyecto.get_or_none((Proyecto.nompro == nombre) & (Proyecto.habilitado == 1))
 
 
 def buscar_participacion(usuario: Usuarios, proyecto: Proyecto):
@@ -67,4 +69,4 @@ def guardar_participante(usuario: Usuarios, proyecto: Proyecto, rol: str) -> boo
         print(f'Valor insertado NO corresponde: {e}')
     except PeeweeException as e:
         print(f'No se pudieron guardar los datos por un error genérico: {e}')
-    return False
+    return False 

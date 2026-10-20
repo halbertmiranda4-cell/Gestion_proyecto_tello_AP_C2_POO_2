@@ -8,18 +8,35 @@ from auxiliares import (
     menu_tableros,
     menu_tarjetas,
     opcion_invalida,
-    menu_anterior
+    menu_anterior,
+    mensaje_error
 )
-from presentacion.presentacion_usuarios import mostrar_usuarios, solicitar_datos_usuario
+from presentacion.presentacion_usuarios import (
+    mostrar_usuarios,
+    solicitar_datos_usuario,
+    solicitar_modificacion_usuario,
+    solicitar_deshabilitar_usuario,
+    solicitar_habilitar_usuario
+)
 from presentacion.presentacion_proyectos import (
     mostrar_proyectos,
     solicitar_datos_proyecto,
+    solicitar_modificacion_proyecto,
+    solicitar_eliminar_proyecto,
     solicitar_participante,
     mostrar_participantes
 )
-from presentacion.presentacion_tableros import ver_tablero, solicitar_datos_tablero, solicitar_datos_lista
+from presentacion.presentacion_tableros import (
+    ver_tablero,
+    solicitar_datos_tablero,
+    solicitar_datos_lista,
+    solicitar_modificacion_lista,
+    solicitar_eliminar_lista
+)
 from presentacion.presentacion_tarjetas import (
     solicitar_datos_tarjeta,
+    solicitar_modificacion_tarjeta,
+    solicitar_eliminar_tarjeta,
     solicitar_mover_tarjeta,
     solicitar_responsable,
     solicitar_cambio_estado
@@ -30,6 +47,15 @@ from presentacion.presentacion_reporte import mostrar_reporte
 def mostrar_opciones(menu: dict):
     for clave, valor in menu.items():
         print(f'[{clave}] - {valor}')
+
+
+def ejecutar(accion):
+    """Ejecuta una opción del menú. Si ocurre un error inesperado (por ejemplo,
+    se pierde la conexión con MySQL), lo muestra y vuelve al menú en vez de cerrar la app."""
+    try:
+        accion()
+    except Exception as error:
+        print(f'{mensaje_error}{error}\n')
 
 
 def sub_menu(titulo: str, opciones: dict, acciones: dict):
@@ -44,7 +70,7 @@ def sub_menu(titulo: str, opciones: dict, acciones: dict):
             break
         accion = acciones.get(opcion)
         if accion:
-            accion()
+            ejecutar(accion)
         else:
             print(opcion_invalida)
 
@@ -62,32 +88,41 @@ def menu_principal():
             case '1':
                 sub_menu('Gestión Usuarios', menu_usuarios, {
                     '1': mostrar_usuarios,
-                    '2': solicitar_datos_usuario
+                    '2': solicitar_datos_usuario,
+                    '3': solicitar_modificacion_usuario,
+                    '4': solicitar_deshabilitar_usuario,
+                    '5': solicitar_habilitar_usuario
                 })
             case '2':
                 sub_menu('Gestión Proyectos', menu_proyectos, {
                     '1': mostrar_proyectos,
                     '2': solicitar_datos_proyecto,
-                    '3': solicitar_participante,
-                    '4': mostrar_participantes
+                    '3': solicitar_modificacion_proyecto,
+                    '4': solicitar_eliminar_proyecto,
+                    '5': solicitar_participante,
+                    '6': mostrar_participantes
                 })
             case '3':
                 sub_menu('Gestión Tableros y Listas', menu_tableros, {
                     '1': ver_tablero,
                     '2': solicitar_datos_tablero,
-                    '3': solicitar_datos_lista
+                    '3': solicitar_datos_lista,
+                    '4': solicitar_modificacion_lista,
+                    '5': solicitar_eliminar_lista
                 })
             case '4':
                 sub_menu('Gestión Tarjetas', menu_tarjetas, {
                     '1': solicitar_datos_tarjeta,
-                    '2': solicitar_mover_tarjeta,
-                    '3': solicitar_responsable,
-                    '4': solicitar_cambio_estado
+                    '2': solicitar_modificacion_tarjeta,
+                    '3': solicitar_eliminar_tarjeta,
+                    '4': solicitar_mover_tarjeta,
+                    '5': solicitar_responsable,
+                    '6': solicitar_cambio_estado
                 })
             case '5':
-                mostrar_reporte()
+                ejecutar(mostrar_reporte)
             case '0':
                 print('Saliendo...')
                 sys.exit()
             case _:
-                print(opcion_invalida)
+                print(opcion_invalida) 

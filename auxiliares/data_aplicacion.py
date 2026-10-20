@@ -1,5 +1,5 @@
 nombre_aplicacion = 'Trello-POO'
-version_aplicacion = 'v1.0.0'
+version_aplicacion = 'v1.1.0'
 
 # Versionado de Software (mismo criterio que el proyecto base)
 # Mayor: cambios que rompen la aplicación (arquitectura, base de datos, servidor).

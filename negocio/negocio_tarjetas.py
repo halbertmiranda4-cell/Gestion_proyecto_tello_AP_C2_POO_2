@@ -14,6 +14,10 @@ def proyecto_de_tarjeta(tarjeta):
     return tarjeta.id_lista.id_tablero.id_proyecto
 
 
+def obtener_tarjeta(id_tarjeta: int):
+    return buscar_tarjeta_por_id(id_tarjeta)
+
+
 def crear_tarjeta(id_lista: int, nombre: str, descripcion: str, fecha_vencimiento):
     """Crea una tarjeta al final de la lista. fecha_vencimiento: date o None.
     Retorna (exito, mensaje)."""
@@ -32,9 +36,51 @@ def crear_tarjeta(id_lista: int, nombre: str, descripcion: str, fecha_vencimient
     tarjeta.estado = 'pendiente'
     tarjeta.id_lista = lista
     tarjeta.posicion = siguiente_posicion_tarjeta(lista)
+    tarjeta.habilitado = 1
     if guardar_registro(tarjeta):
         return True, f'Tarjeta "{tarjeta.nombtarj}" creada en "{lista.nomblist}" (Id {tarjeta.id_tarjeta}).'
     return False, 'No se pudo crear la tarjeta.'
+
+
+def modificar_tarjeta(id_tarjeta: int, nombre: str, descripcion: str, fecha_vencimiento):
+    """Modifica nombre, descripción y/o fecha límite. Vacío o None significa "no cambiar".
+    Regla: la fecha límite no puede ser anterior a la fecha de creación. Retorna (exito, mensaje)."""
+    tarjeta = buscar_tarjeta_por_id(id_tarjeta)
+    if not tarjeta:
+        return False, 'No existe una tarjeta con ese Id.'
+
+    cambios = []
+    nombre = nombre.strip()
+    if nombre and nombre != tarjeta.nombtarj:
+        tarjeta.nombtarj = nombre
+        cambios.append('nombre')
+    descripcion = descripcion.strip()
+    if descripcion and descripcion != tarjeta.descriptarj:
+        tarjeta.descriptarj = descripcion
+        cambios.append('descripción')
+    if fecha_vencimiento and fecha_vencimiento != tarjeta.fecha_vencimiento:
+        if tarjeta.fecha_creacion and fecha_vencimiento < tarjeta.fecha_creacion:
+            return False, 'La fecha límite no puede ser anterior a la fecha de creación de la tarjeta.'
+        tarjeta.fecha_vencimiento = fecha_vencimiento
+        cambios.append('fecha límite')
+
+    if not cambios:
+        return False, 'No se ingresó ningún cambio.'
+    if guardar_registro(tarjeta):
+        return True, f'Tarjeta "{tarjeta.nombtarj}" actualizada ({", ".join(cambios)}).'
+    return False, 'No se pudo modificar la tarjeta.'
+
+
+def eliminar_tarjeta(id_tarjeta: int):
+    """Borrado lógico: la tarjeta deja de verse y de contar en el reporte. Retorna (exito, mensaje)."""
+    tarjeta = buscar_tarjeta_por_id(id_tarjeta)
+    if not tarjeta:
+        return False, 'No existe una tarjeta con ese Id.'
+
+    tarjeta.habilitado = 0
+    if guardar_registro(tarjeta):
+        return True, f'Tarjeta "{tarjeta.nombtarj}" eliminada.'
+    return False, 'No se pudo eliminar la tarjeta.'
 
 
 def mover_tarjeta(id_tarjeta: int, id_lista_destino: int):
@@ -69,6 +115,8 @@ def asignar_responsable(id_tarjeta: int, rut: str):
     participante = buscar_participante_por_rut(formatear_rut(rut), proyecto)
     if not participante:
         return False, f'Ese usuario no participa en el proyecto "{proyecto.nompro}".'
+    if not participante.id_usuario.habilitado:
+        return False, f'{participante.id_usuario.nombre} está deshabilitado y no puede recibir tarjetas.'
 
     tarjeta.id_responsable = participante
     if guardar_registro(tarjeta):
@@ -89,4 +137,4 @@ def cambiar_estado(id_tarjeta: int, estado: str):
     tarjeta.estado = estado
     if guardar_registro(tarjeta):
         return True, f'"{tarjeta.nombtarj}" ahora está "{estado}".'
-    return False, 'No se pudo cambiar el estado.'
+    return False, 'No se pudo cambiar el estado.' 

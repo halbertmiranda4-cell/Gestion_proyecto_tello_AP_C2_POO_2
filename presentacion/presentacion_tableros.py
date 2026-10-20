@@ -1,7 +1,16 @@
 from prettytable import PrettyTable
-from negocio.negocio_tableros import crear_tablero, crear_lista, obtener_tablero, nombre_responsable, esta_vencida
-from presentacion.presentacion_proyectos import mostrar_proyectos
-from auxiliares import pedir_texto, pedir_entero
+from negocio.negocio_tableros import (
+    crear_tablero,
+    crear_lista,
+    obtener_lista,
+    modificar_lista,
+    eliminar_lista,
+    obtener_tablero,
+    nombre_responsable,
+    esta_vencida
+)
+from presentacion.presentacion_proyectos import mostrar_proyectos, mostrar_resultado
+from auxiliares import pedir_texto, pedir_entero, confirmar, operacion_cancelada
 
 
 def elegir_proyecto() -> int:
@@ -53,8 +62,7 @@ def solicitar_datos_tablero():
     id_proyecto = elegir_proyecto()
     nombre = pedir_texto('Nombre del tablero: ', largo_maximo=50)
 
-    exito, mensaje = crear_tablero(id_proyecto, nombre)
-    print(('ERROR: ', 'OK: ')[exito] + mensaje + '\n')
+    mostrar_resultado(*crear_tablero(id_proyecto, nombre))
 
 
 def solicitar_datos_lista():
@@ -62,5 +70,29 @@ def solicitar_datos_lista():
     nombre = pedir_texto('Nombre de la lista: ', largo_maximo=50)
     descripcion = pedir_texto('Descripción (opcional, Enter para omitir): ', obligatorio=False, largo_maximo=150)
 
-    exito, mensaje = crear_lista(id_proyecto, nombre, descripcion)
-    print(('ERROR: ', 'OK: ')[exito] + mensaje + '\n')
+    mostrar_resultado(*crear_lista(id_proyecto, nombre, descripcion))
+
+
+def solicitar_modificacion_lista():
+    if not mostrar_tablero(elegir_proyecto()):
+        return
+    lista = obtener_lista(pedir_entero('Id de la lista a modificar: '))
+    if not lista:
+        print('ERROR: No existe una lista con ese Id.\n')
+        return
+
+    print('Deje en blanco (Enter) lo que no quiera cambiar.')
+    nombre = pedir_texto(f'Nombre [{lista.nomblist}]: ', obligatorio=False, largo_maximo=50)
+    descripcion = pedir_texto(f'Descripción [{lista.descriplist or "-"}]: ', obligatorio=False, largo_maximo=150)
+
+    mostrar_resultado(*modificar_lista(lista.id_lista, nombre, descripcion))
+
+
+def solicitar_eliminar_lista():
+    if not mostrar_tablero(elegir_proyecto()):
+        return
+    id_lista = pedir_entero('Id de la lista a eliminar: ')
+    if confirmar('¿Seguro que desea eliminar la lista?'):
+        mostrar_resultado(*eliminar_lista(id_lista))
+    else:
+        print(operacion_cancelada) 

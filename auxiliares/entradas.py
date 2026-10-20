@@ -44,3 +44,12 @@ def elegir_opcion(mensaje: str, opciones: tuple) -> str:
         if 1 <= eleccion <= len(opciones):
             return opciones[eleccion - 1]
         print(f'Elija un número entre 1 y {len(opciones)}.')
+
+
+def confirmar(mensaje: str) -> bool:
+    """Pregunta s/n. Retorna True solo si responde 's'."""
+    while True:
+        respuesta = input(f'{mensaje} (s/n): ').strip().lower()
+        if respuesta in ('s', 'n'):
+            return respuesta == 's'
+        print('Responda s o n.') 
