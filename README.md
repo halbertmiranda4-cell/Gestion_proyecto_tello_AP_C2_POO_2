@@ -94,7 +94,7 @@ pip install -r requirements.txt
 ```
 
 ### 3. Crear la base de datos
-Con **XAMPP** encendido (Apache y MySQL), entra a `http://localhost/phpmyadmin` y ejecuta los scripts de `datos/sql/` **en este orden**:
+Con **XAMPP** encendido (Apache y MySQL), entrar a `http://localhost/phpmyadmin` y ejecuta los scripts de `datos/sql/` **en este orden**:
 
 | Orden | Script | Qué hace |
 |---|---|---|
@@ -168,4 +168,4 @@ Se usa versionado semántico **Mayor.Menor.Parche**:
 ---
 
 ## Autor
-**Halbert Miranda** · Programación Orientada a Objetos · INACAP
+**Halbert Miranda y Benjamin Arriagada ** · Programación Orientada a Objetos · INACAP
