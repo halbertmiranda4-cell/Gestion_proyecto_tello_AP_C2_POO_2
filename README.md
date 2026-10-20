@@ -168,4 +168,4 @@ Se usa versionado semántico **Mayor.Menor.Parche**:
 ---
 
 ## Autor
-**Halbert Miranda y Benjamin Arriagada ** · Programación Orientada a Objetos · INACAP
+**Halbert Miranda y Benjamin Arriagada** · Programación Orientada a Objetos · INACAP
