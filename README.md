@@ -168,8 +168,8 @@ Se usa versionado semántico **Mayor.Menor.Parche**:
 ---
 
 ## Documentación
-- Informe de diseño: `docs/Informe_Diseno_Trello_v4.pdf`
-- Diagrama de clases (editable en draw.io): `docs/Diagrama_Clases_Trello_v2.drawio.png`
+- Informe de diseño: `docs/Informe_Diseno_Trello_v5.pdf`
+- Diagrama de clases (editable en draw.io): `docs/Diagrama_Clases_Trello_v3.drawio.png`
 
 ## Autor
 **Halbert Miranda y Benjamin Arriagada** · Programación Orientada a Objetos · INACAP
