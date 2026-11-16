@@ -1,7 +1,10 @@
 from prettytable import PrettyTable
-from negocio.negocio_reporte import reporte_avance
-from presentacion.presentacion_tableros import elegir_proyecto, formatear_fecha
-from negocio.negocio_tableros import nombre_responsable
+from negocio.negocio_reporte import ServicioReporte
+from presentacion.presentacion_tableros import elegir_proyecto
+from presentacion.presentacion_comun import formatear_fecha
+
+
+servicio_reporte = ServicioReporte()
 
 
 def barra_progreso(porcentaje: int, largo: int = 20) -> str:
@@ -10,7 +13,7 @@ def barra_progreso(porcentaje: int, largo: int = 20) -> str:
 
 
 def mostrar_reporte():
-    exito, mensaje, datos = reporte_avance(elegir_proyecto())
+    exito, mensaje, datos = servicio_reporte.reporte_avance(elegir_proyecto())
     if not exito:
         print('ERROR: ' + mensaje + '\n')
         return
@@ -21,7 +24,8 @@ def mostrar_reporte():
         return
 
     print(f'{barra_progreso(datos["porcentaje"])} {datos["porcentaje"]}%  '
-          f'({datos["completadas"]} de {datos["total"]} tarjetas completadas)\n')
+          f'({datos["completadas"]} de {datos["total"]} tarjetas completadas)')
+    print(f'Avance ponderado (en progreso cuenta como media tarea): {datos["avance_ponderado"]}%\n')
 
     tabla_estados = PrettyTable()
     tabla_estados.field_names = ['Estado', 'Tarjetas']
@@ -41,7 +45,7 @@ def mostrar_reporte():
         tabla_vencidas.field_names = ['Id', 'Tarjeta', 'Venció', 'Responsable']
         for tarjeta in datos['vencidas']:
             tabla_vencidas.add_row([tarjeta.id_tarjeta, tarjeta.nombtarj,
-                                    formatear_fecha(tarjeta.fecha_vencimiento), nombre_responsable(tarjeta)])
+                                    formatear_fecha(tarjeta.fecha_vencimiento), tarjeta.nombre_responsable])
         print(tabla_vencidas)
     else:
         print('\nNo hay tarjetas vencidas.')

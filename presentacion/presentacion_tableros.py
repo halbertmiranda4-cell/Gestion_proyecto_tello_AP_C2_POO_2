@@ -1,16 +1,12 @@
 from prettytable import PrettyTable
-from negocio.negocio_tableros import (
-    crear_tablero,
-    crear_lista,
-    obtener_lista,
-    modificar_lista,
-    eliminar_lista,
-    obtener_tablero,
-    nombre_responsable,
-    esta_vencida
-)
-from presentacion.presentacion_proyectos import mostrar_proyectos, mostrar_resultado
-from auxiliares import pedir_texto, pedir_entero, confirmar, operacion_cancelada
+from negocio.negocio_tableros import ServicioTableros, ServicioListas
+from presentacion.presentacion_proyectos import mostrar_proyectos
+from presentacion.presentacion_comun import mostrar_resultado, formatear_fecha, solicitar_eliminacion
+from auxiliares import pedir_texto, pedir_entero
+
+
+servicio_tableros = ServicioTableros()
+servicio_listas = ServicioListas()
 
 
 def elegir_proyecto() -> int:
@@ -18,13 +14,9 @@ def elegir_proyecto() -> int:
     return pedir_entero('Id del proyecto: ')
 
 
-def formatear_fecha(fecha) -> str:
-    return fecha.strftime('%d-%m-%Y') if fecha else '-'
-
-
 def mostrar_tablero(id_proyecto: int) -> bool:
     """Muestra cada lista con sus tarjetas. Retorna False si no hay tablero que mostrar."""
-    proyecto, tablero, listas = obtener_tablero(id_proyecto)
+    proyecto, tablero, listas = servicio_tableros.obtener_tablero(id_proyecto)
     if not proyecto:
         print('ERROR: No existe un proyecto con ese Id.\n')
         return False
@@ -46,9 +38,10 @@ def mostrar_tablero(id_proyecto: int) -> bool:
         tabla.field_names = ['Id', 'Tarjeta', 'Estado', 'Vence', 'Responsable']
         for tarjeta in lista.tarjetas:
             vence = formatear_fecha(tarjeta.fecha_vencimiento)
-            if esta_vencida(tarjeta):
+            if tarjeta.esta_vencida():
                 vence += ' VENCIDA'
-            tabla.add_row([tarjeta.id_tarjeta, tarjeta.nombtarj, tarjeta.estado, vence, nombre_responsable(tarjeta)])
+            tabla.add_row([tarjeta.id_tarjeta, tarjeta.nombre, tarjeta.estado_actual.etiqueta(), vence,
+                           tarjeta.nombre_responsable])
         print(tabla)
     print()
     return True
@@ -62,7 +55,7 @@ def solicitar_datos_tablero():
     id_proyecto = elegir_proyecto()
     nombre = pedir_texto('Nombre del tablero: ', largo_maximo=50)
 
-    mostrar_resultado(*crear_tablero(id_proyecto, nombre))
+    mostrar_resultado(*servicio_tableros.crear(id_proyecto, nombre))
 
 
 def solicitar_datos_lista():
@@ -70,13 +63,13 @@ def solicitar_datos_lista():
     nombre = pedir_texto('Nombre de la lista: ', largo_maximo=50)
     descripcion = pedir_texto('Descripción (opcional, Enter para omitir): ', obligatorio=False, largo_maximo=150)
 
-    mostrar_resultado(*crear_lista(id_proyecto, nombre, descripcion))
+    mostrar_resultado(*servicio_listas.crear(id_proyecto, nombre, descripcion))
 
 
 def solicitar_modificacion_lista():
     if not mostrar_tablero(elegir_proyecto()):
         return
-    lista = obtener_lista(pedir_entero('Id de la lista a modificar: '))
+    lista = servicio_listas.obtener(pedir_entero('Id de la lista a modificar: '))
     if not lista:
         print('ERROR: No existe una lista con ese Id.\n')
         return
@@ -85,14 +78,15 @@ def solicitar_modificacion_lista():
     nombre = pedir_texto(f'Nombre [{lista.nomblist}]: ', obligatorio=False, largo_maximo=50)
     descripcion = pedir_texto(f'Descripción [{lista.descriplist or "-"}]: ', obligatorio=False, largo_maximo=150)
 
-    mostrar_resultado(*modificar_lista(lista.id_lista, nombre, descripcion))
+    mostrar_resultado(*servicio_listas.modificar(lista.id_lista, nombre, descripcion))
 
 
 def solicitar_eliminar_lista():
     if not mostrar_tablero(elegir_proyecto()):
         return
-    id_lista = pedir_entero('Id de la lista a eliminar: ')
-    if confirmar('¿Seguro que desea eliminar la lista?'):
-        mostrar_resultado(*eliminar_lista(id_lista))
-    else:
-        print(operacion_cancelada) 
+    lista = servicio_listas.obtener(pedir_entero('Id de la lista a eliminar: '))
+    if not lista:
+        print('ERROR: No existe una lista con ese Id.\n')
+        return
+    # resumen() viene del padre ElementoTablero; nombre, tipo() y ubicacion() son de Lista
+    solicitar_eliminacion(servicio_listas, lista.id_lista, f'¿Seguro que desea eliminar la {lista.resumen()}?') 

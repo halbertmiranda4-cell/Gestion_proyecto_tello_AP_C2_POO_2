@@ -3,4 +3,4 @@
 
 INSERT INTO proyecto (NOMPRO, DESCRIPCION) VALUES
 ('Sitio web Cafetería', 'Desarrollo del sitio web y carta digital de una cafetería'),
-('Sistema de inventario', 'Control de stock para una ferretería');
+('Sistema de inventario', 'Control de stock para una ferretería'); 

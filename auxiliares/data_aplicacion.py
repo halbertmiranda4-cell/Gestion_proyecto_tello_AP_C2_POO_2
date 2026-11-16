@@ -1,5 +1,5 @@
 nombre_aplicacion = 'Trello-POO'
-version_aplicacion = 'v1.1.0'
+version_aplicacion = 'v1.4.0'
 
 # Versionado de Software (mismo criterio que el proyecto base)
 # Mayor: cambios que rompen la aplicación (arquitectura, base de datos, servidor).
@@ -10,4 +10,4 @@ version_aplicacion = 'v1.1.0'
 estados_tarjeta = ('pendiente', 'en progreso', 'completada')
 
 # Roles válidos de un usuario dentro de un proyecto
-roles_proyecto = ('administrador', 'miembro')
+roles_proyecto = ('administrador', 'miembro') 

@@ -1,135 +1,125 @@
-from prettytable import PrettyTable
-from datos.modelos.models import Proyecto
-from datos.repositorios.repositorio_base import guardar_registro
-from datos.repositorios.repositorio_usuarios import buscar_usuario_por_rut
-from datos.repositorios.repositorio_proyectos import (
-    listado_proyectos,
-    buscar_proyecto_por_id,
-    buscar_proyecto_por_nombre,
-    buscar_participacion,
-    listado_participantes,
-    guardar_proyecto_con_administrador,
-    guardar_participante
-)
-from auxiliares import validar_rut, formatear_rut, roles_proyecto
+from datos.modelos.models import Proyecto, UsuarioProyecto
+from datos.repositorios.repositorio_proyectos import RepositorioProyectos, RepositorioParticipantes
+from datos.repositorios.repositorio_usuarios import RepositorioUsuarios
+from negocio.servicio_base import ServicioBase
+from auxiliares import Rut, roles_proyecto
 
 
-def lista_proyectos(tabla_proyectos: PrettyTable):
-    proyectos = listado_proyectos()
-    if proyectos:
-        for proyecto in proyectos:
-            tabla_proyectos.add_row([proyecto.id_proyecto, proyecto.nompro, proyecto.descripcion or '-',
-                                     proyecto.fecha_creacion, proyecto.participantes])
-    return tabla_proyectos
+class ServicioProyectos(ServicioBase):
+    """Reglas de negocio de los proyectos y sus participantes."""
 
+    def __init__(self):
+        super().__init__(RepositorioProyectos())
+        self.__participantes = RepositorioParticipantes()   # privado
+        self.__usuarios = RepositorioUsuarios()             # privado
 
-def obtener_proyecto(id_proyecto: int):
-    return buscar_proyecto_por_id(id_proyecto)
+    def listar(self):
+        return self._repositorio.listar_con_participantes()
 
+    def __buscar_usuario(self, rut: str):
+        rut = Rut(rut)
+        if not rut.es_valido():
+            return None
+        return self.__usuarios.buscar_por_rut(rut.formateado())
 
-def buscar_usuario(rut: str):
-    """Retorna el usuario con ese RUT, o None si el RUT es inválido o no existe."""
-    if not validar_rut(rut):
-        return None
-    return buscar_usuario_por_rut(formatear_rut(rut))
+    def crear(self, nombre: str, descripcion: str, rut_creador: str):
+        """Crea el proyecto y deja a quien lo crea como administrador. Retorna (exito, mensaje)."""
+        nombre = nombre.strip()
+        if not nombre:
+            return False, 'El nombre del proyecto es obligatorio.'
+        if self._repositorio.buscar_por_nombre(nombre):
+            return False, 'Ya existe un proyecto con ese nombre.'
+        creador = self.__buscar_usuario(rut_creador)
+        if not creador:
+            return False, 'No existe un usuario con ese RUT.'
+        if not creador.esta_habilitado:
+            return False, f'{creador.nombre} está deshabilitado y no puede crear proyectos.'
 
+        proyecto = Proyecto(nompro=nombre, descripcion=descripcion.strip() or None, habilitado=1)
+        if self._repositorio.guardar_con_administrador(proyecto, creador):
+            return True, f'Proyecto "{proyecto}" creado (Id {proyecto.id_proyecto}). {creador.nombre} quedó como administrador.'
+        return False, 'No se pudo crear el proyecto.'
 
-def crear_proyecto(nombre: str, descripcion: str, rut_creador: str):
-    """Crea el proyecto y deja a quien lo crea como administrador.
-    Retorna (exito, mensaje)."""
-    nombre = nombre.strip()
+    def modificar(self, id_proyecto: int, nombre: str, descripcion: str):
+        """Modifica nombre y/o descripción. Vacío = no cambiar. Retorna (exito, mensaje)."""
+        proyecto = self.obtener(id_proyecto)
+        if not proyecto:
+            return False, 'No existe un proyecto con ese Id.'
 
-    # Reglas de negocio
-    if not nombre:
-        return False, 'El nombre del proyecto es obligatorio.'
-    if buscar_proyecto_por_nombre(nombre):
-        return False, 'Ya existe un proyecto con ese nombre.'
-    creador = buscar_usuario(rut_creador)
-    if not creador:
-        return False, 'No existe un usuario con ese RUT.'
-    if not creador.habilitado:
-        return False, f'{creador.nombre} está deshabilitado y no puede crear proyectos.'
+        cambios = []
+        nombre = nombre.strip()
+        if nombre and nombre != proyecto.nompro:
+            otro = self._repositorio.buscar_por_nombre(nombre)
+            if otro and otro.id_proyecto != proyecto.id_proyecto:
+                return False, 'Ya existe otro proyecto con ese nombre.'
+            proyecto.nompro = nombre
+            cambios.append('nombre')
+        descripcion = descripcion.strip()
+        if descripcion and descripcion != proyecto.descripcion:
+            proyecto.descripcion = descripcion
+            cambios.append('descripción')
 
-    nuevo_proyecto = Proyecto()
-    nuevo_proyecto.nompro = nombre
-    nuevo_proyecto.descripcion = descripcion.strip() or None
-    nuevo_proyecto.habilitado = 1
+        if not cambios:
+            return False, 'No se ingresó ningún cambio.'
+        if self._repositorio.guardar(proyecto):
+            return True, f'Proyecto "{proyecto}" actualizado ({", ".join(cambios)}).'
+        return False, 'No se pudo modificar el proyecto.'
 
-    if guardar_proyecto_con_administrador(nuevo_proyecto, creador):
-        return True, f'Proyecto "{nombre}" creado. {creador.nombre} quedó como administrador.'
-    return False, 'No se pudo crear el proyecto.'
+    def eliminar(self, id_proyecto: int):
+        """Polimorfismo: en Proyectos, eliminar = borrado lógico del proyecto."""
+        proyecto = self.obtener(id_proyecto)
+        if not proyecto:
+            return False, 'No existe un proyecto con ese Id.'
+        if self._repositorio.eliminar(proyecto):
+            return True, f'Proyecto "{proyecto}" eliminado.'
+        return False, 'No se pudo eliminar el proyecto.'
 
+    def __buscar_participante(self, proyecto, rut: str):
+        rut = Rut(rut)
+        if not rut.es_valido():
+            return None
+        return self.__participantes.buscar_por_rut(rut.formateado(), proyecto)
 
-def modificar_proyecto(id_proyecto: int, nombre: str, descripcion: str):
-    """Modifica nombre y/o descripción. Un campo vacío significa "no cambiar".
-    Retorna (exito, mensaje)."""
-    proyecto = buscar_proyecto_por_id(id_proyecto)
-    if not proyecto:
-        return False, 'No existe un proyecto con ese Id.'
+    def verificar_permiso_eliminar(self, id_proyecto: int, rut_solicitante: str):
+        """Polimorfismo: es el ROL (Administrador o Miembro) el que responde si puede eliminar."""
+        proyecto = self.obtener(id_proyecto)
+        if not proyecto:
+            return False, 'No existe un proyecto con ese Id.'
+        solicitante = self.__buscar_participante(proyecto, rut_solicitante)
+        if not solicitante:
+            return False, f'Ese usuario no participa en el proyecto "{proyecto}".'
+        if not solicitante.rol_actual.puede_eliminar_proyecto():
+            return False, f'Un {solicitante.rol_actual} no puede eliminar el proyecto.'
+        return True, ''
 
-    cambios = []
+    def agregar_participante(self, id_proyecto: int, rut_solicitante: str, rut: str, rol: str):
+        proyecto = self.obtener(id_proyecto)
+        if not proyecto:
+            return False, 'No existe un proyecto con ese Id.'
+        solicitante = self.__buscar_participante(proyecto, rut_solicitante)
+        if not solicitante:
+            return False, f'Quien agrega debe participar en el proyecto "{proyecto}".'
+        # Polimorfismo: Administrador responde True, Miembro responde False
+        if not solicitante.rol_actual.puede_gestionar_participantes():
+            return False, f'Un {solicitante.rol_actual} no puede agregar participantes.'
+        usuario = self.__buscar_usuario(rut)
+        if not usuario:
+            return False, 'No existe un usuario con ese RUT.'
+        if not usuario.esta_habilitado:
+            return False, f'{usuario.nombre} está deshabilitado y no puede unirse a proyectos.'
+        if rol not in roles_proyecto:
+            return False, 'El rol no es válido.'
+        if self.__participantes.buscar(usuario, proyecto):
+            return False, f'{usuario.nombre} ya participa en este proyecto.'
 
-    nombre = nombre.strip()
-    if nombre and nombre != proyecto.nompro:
-        otro = buscar_proyecto_por_nombre(nombre)
-        if otro and otro.id_proyecto != proyecto.id_proyecto:
-            return False, 'Ya existe otro proyecto con ese nombre.'
-        proyecto.nompro = nombre
-        cambios.append('nombre')
+        participante = UsuarioProyecto(id_usuario=usuario, id_proyecto=proyecto, rol=rol)
+        if self.__participantes.guardar(participante):
+            return True, f'{usuario.nombre} agregado a "{proyecto}" como {rol}.'
+        return False, 'No se pudo agregar el participante.'
 
-    descripcion = descripcion.strip()
-    if descripcion and descripcion != proyecto.descripcion:
-        proyecto.descripcion = descripcion
-        cambios.append('descripción')
-
-    if not cambios:
-        return False, 'No se ingresó ningún cambio.'
-    if guardar_registro(proyecto):
-        return True, f'Proyecto "{proyecto.nompro}" actualizado ({", ".join(cambios)}).'
-    return False, 'No se pudo modificar el proyecto.'
-
-
-def eliminar_proyecto(id_proyecto: int):
-    """Borrado lógico: el proyecto deja de aparecer, pero sus datos se conservan.
-    Retorna (exito, mensaje)."""
-    proyecto = buscar_proyecto_por_id(id_proyecto)
-    if not proyecto:
-        return False, 'No existe un proyecto con ese Id.'
-
-    proyecto.habilitado = 0
-    if guardar_registro(proyecto):
-        return True, f'Proyecto "{proyecto.nompro}" eliminado.'
-    return False, 'No se pudo eliminar el proyecto.'
-
-
-def agregar_participante(id_proyecto: int, rut: str, rol: str):
-    """Agrega un usuario a un proyecto con un rol. Retorna (exito, mensaje)."""
-    proyecto = buscar_proyecto_por_id(id_proyecto)
-    if not proyecto:
-        return False, 'No existe un proyecto con ese Id.'
-    usuario = buscar_usuario(rut)
-    if not usuario:
-        return False, 'No existe un usuario con ese RUT.'
-    if not usuario.habilitado:
-        return False, f'{usuario.nombre} está deshabilitado y no puede unirse a proyectos.'
-    if rol not in roles_proyecto:
-        return False, 'El rol no es válido.'
-    if buscar_participacion(usuario, proyecto):
-        return False, f'{usuario.nombre} ya participa en este proyecto.'
-
-    if guardar_participante(usuario, proyecto, rol):
-        return True, f'{usuario.nombre} agregado a "{proyecto.nompro}" como {rol}.'
-    return False, 'No se pudo agregar el participante.'
-
-
-def lista_participantes(id_proyecto: int, tabla_participantes: PrettyTable):
-    """Retorna (proyecto, tabla). Si el proyecto no existe, proyecto es None."""
-    proyecto = buscar_proyecto_por_id(id_proyecto)
-    if not proyecto:
-        return None, tabla_participantes
-    participantes = listado_participantes(proyecto)
-    if participantes:
-        for participante in participantes:
-            usuario = participante.id_usuario
-            tabla_participantes.add_row([usuario.nombre, usuario.rut, participante.rol, participante.fecha_ingreso])
-    return proyecto, tabla_participantes 
+    def listar_participantes(self, id_proyecto: int):
+        """Retorna (proyecto, participantes). Si el proyecto no existe, proyecto es None."""
+        proyecto = self.obtener(id_proyecto)
+        if not proyecto:
+            return None, []
+        return proyecto, self.__participantes.listar_por_proyecto(proyecto) 

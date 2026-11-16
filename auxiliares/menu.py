@@ -1,3 +1,9 @@
+menu_sesion = {
+    '1': 'Iniciar sesión',
+    '2': 'Registrarse',
+    '0': 'Salir'
+}
+
 menu_superior = {
     '1': 'Gestión Usuarios',
     '2': 'Gestión Proyectos',
@@ -43,4 +49,4 @@ menu_tarjetas = {
     '5': 'Asignar responsable',
     '6': 'Cambiar estado',
     '0': 'Volver al menú anterior'
-}
+} 

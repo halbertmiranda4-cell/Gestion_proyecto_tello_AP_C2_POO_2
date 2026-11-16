@@ -42,87 +42,109 @@ from presentacion.presentacion_tarjetas import (
     solicitar_cambio_estado
 )
 from presentacion.presentacion_reporte import mostrar_reporte
+from presentacion.presentacion_sesion import iniciar_sesion
 
 
-def mostrar_opciones(menu: dict):
-    for clave, valor in menu.items():
-        print(f'[{clave}] - {valor}')
+class Menu:
+    """Un menú de consola: muestra opciones y ejecuta la acción elegida.
+    Encapsulamiento: las opciones y acciones son privadas; desde fuera solo se llama a ejecutar()."""
+
+    def __init__(self, titulo: str, opciones: dict, acciones: dict):
+        self.__titulo = titulo
+        self.__opciones = opciones     # {'1': 'texto', ..., '0': 'Volver'}
+        self.__acciones = acciones     # {'1': funcion o Menu, ...}
+
+    @property
+    def titulo(self) -> str:
+        return self.__titulo
+
+    def _mostrar_encabezado(self):
+        print(f'\n--- {self.__titulo} ---')
+
+    def _salir(self):
+        print(menu_anterior)
+
+    def __mostrar_opciones(self):
+        for clave, valor in self.__opciones.items():
+            print(f'[{clave}] - {valor}')
+
+    @staticmethod
+    def __ejecutar_accion(accion):
+        """Si ocurre un error inesperado (por ejemplo, se pierde la conexión con MySQL),
+        lo muestra y vuelve al menú en vez de cerrar la app."""
+        try:
+            accion()
+        except Exception as error:
+            print(f'{mensaje_error}{error}\n')
+
+    def ejecutar(self):
+        while True:
+            self._mostrar_encabezado()
+            self.__mostrar_opciones()
+            opcion = input(f'\nIngrese su opción [0-{len(self.__acciones)}]: ')
+            if opcion == '0':
+                self._salir()
+                break
+            accion = self.__acciones.get(opcion)
+            if isinstance(accion, Menu):
+                accion.ejecutar()                 # un submenú es también un Menu
+            elif accion:
+                self.__ejecutar_accion(accion)
+            else:
+                print(opcion_invalida)
 
 
-def ejecutar(accion):
-    """Ejecuta una opción del menú. Si ocurre un error inesperado (por ejemplo,
-    se pierde la conexión con MySQL), lo muestra y vuelve al menú en vez de cerrar la app."""
-    try:
-        accion()
-    except Exception as error:
-        print(f'{mensaje_error}{error}\n')
+class MenuPrincipal(Menu):
+    """Herencia: es un Menu, pero muestra el nombre y versión una sola vez y al salir cierra la app.
+    Polimorfismo: sobrescribe _mostrar_encabezado() y _salir()."""
 
+    def ejecutar(self):
+        print(f'\n{self.titulo}')
+        print('=' * len(self.titulo) + '\n')
+        super().ejecutar()
 
-def sub_menu(titulo: str, opciones: dict, acciones: dict):
-    """Muestra un submenú y ejecuta la función asociada a cada opción.
-    acciones: {'1': funcion, '2': funcion, ...}. La opción '0' vuelve."""
-    while True:
-        print(f'\n--- {titulo} ---')
-        mostrar_opciones(opciones)
-        opcion = input(f'\nIngrese su opción [0-{len(acciones)}]: ')
-        if opcion == '0':
-            print(menu_anterior)
-            break
-        accion = acciones.get(opcion)
-        if accion:
-            ejecutar(accion)
-        else:
-            print(opcion_invalida)
+    def _mostrar_encabezado(self):
+        pass   # el título ya se mostró al iniciar
+
+    def _salir(self):
+        print('Saliendo...')
+        sys.exit()
 
 
 def menu_principal():
-    titulo = f'{nombre_aplicacion} - {version_aplicacion}'
-    print(f'\n{titulo}')
-    print('=' * len(titulo) + '\n')
+    print(f'\n{nombre_aplicacion} - {version_aplicacion}')
+    usuario = iniciar_sesion()   # si no inicia sesión, la app se cierra aquí
 
-    while True:
-        mostrar_opciones(menu_superior)
-        opcion_usuario = input('\nIngrese su opción [0-5]: ')
-
-        match opcion_usuario:
-            case '1':
-                sub_menu('Gestión Usuarios', menu_usuarios, {
-                    '1': mostrar_usuarios,
-                    '2': solicitar_datos_usuario,
-                    '3': solicitar_modificacion_usuario,
-                    '4': solicitar_deshabilitar_usuario,
-                    '5': solicitar_habilitar_usuario
-                })
-            case '2':
-                sub_menu('Gestión Proyectos', menu_proyectos, {
-                    '1': mostrar_proyectos,
-                    '2': solicitar_datos_proyecto,
-                    '3': solicitar_modificacion_proyecto,
-                    '4': solicitar_eliminar_proyecto,
-                    '5': solicitar_participante,
-                    '6': mostrar_participantes
-                })
-            case '3':
-                sub_menu('Gestión Tableros y Listas', menu_tableros, {
-                    '1': ver_tablero,
-                    '2': solicitar_datos_tablero,
-                    '3': solicitar_datos_lista,
-                    '4': solicitar_modificacion_lista,
-                    '5': solicitar_eliminar_lista
-                })
-            case '4':
-                sub_menu('Gestión Tarjetas', menu_tarjetas, {
-                    '1': solicitar_datos_tarjeta,
-                    '2': solicitar_modificacion_tarjeta,
-                    '3': solicitar_eliminar_tarjeta,
-                    '4': solicitar_mover_tarjeta,
-                    '5': solicitar_responsable,
-                    '6': solicitar_cambio_estado
-                })
-            case '5':
-                ejecutar(mostrar_reporte)
-            case '0':
-                print('Saliendo...')
-                sys.exit()
-            case _:
-                print(opcion_invalida) 
+    MenuPrincipal(f'{nombre_aplicacion} - {version_aplicacion} · Sesión: {usuario.nombre}', menu_superior, {
+        '1': Menu('Gestión Usuarios', menu_usuarios, {
+            '1': mostrar_usuarios,
+            '2': solicitar_datos_usuario,
+            '3': solicitar_modificacion_usuario,
+            '4': solicitar_deshabilitar_usuario,
+            '5': solicitar_habilitar_usuario
+        }),
+        '2': Menu('Gestión Proyectos', menu_proyectos, {
+            '1': mostrar_proyectos,
+            '2': solicitar_datos_proyecto,
+            '3': solicitar_modificacion_proyecto,
+            '4': solicitar_eliminar_proyecto,
+            '5': solicitar_participante,
+            '6': mostrar_participantes
+        }),
+        '3': Menu('Gestión Tableros y Listas', menu_tableros, {
+            '1': ver_tablero,
+            '2': solicitar_datos_tablero,
+            '3': solicitar_datos_lista,
+            '4': solicitar_modificacion_lista,
+            '5': solicitar_eliminar_lista
+        }),
+        '4': Menu('Gestión Tarjetas', menu_tarjetas, {
+            '1': solicitar_datos_tarjeta,
+            '2': solicitar_modificacion_tarjeta,
+            '3': solicitar_eliminar_tarjeta,
+            '4': solicitar_mover_tarjeta,
+            '5': solicitar_responsable,
+            '6': solicitar_cambio_estado
+        }),
+        '5': mostrar_reporte
+    }).ejecutar() 

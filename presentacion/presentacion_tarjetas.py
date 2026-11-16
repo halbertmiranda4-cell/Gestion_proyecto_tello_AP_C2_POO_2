@@ -1,23 +1,10 @@
-from negocio.negocio_tarjetas import (
-    obtener_tarjeta,
-    crear_tarjeta,
-    modificar_tarjeta,
-    eliminar_tarjeta,
-    mover_tarjeta,
-    asignar_responsable,
-    cambiar_estado
-)
-from presentacion.presentacion_tableros import elegir_proyecto, mostrar_tablero, formatear_fecha
-from presentacion.presentacion_proyectos import pedir_rut, mostrar_resultado
-from auxiliares import (
-    pedir_texto,
-    pedir_entero,
-    pedir_fecha,
-    elegir_opcion,
-    confirmar,
-    estados_tarjeta,
-    operacion_cancelada
-)
+from negocio.negocio_tarjetas import ServicioTarjetas
+from presentacion.presentacion_tableros import elegir_proyecto, mostrar_tablero
+from presentacion.presentacion_comun import mostrar_resultado, pedir_rut, formatear_fecha, solicitar_eliminacion
+from auxiliares import pedir_texto, pedir_entero, pedir_fecha, elegir_opcion, estados_tarjeta
+
+
+servicio_tarjetas = ServicioTarjetas()
 
 
 def solicitar_datos_tarjeta():
@@ -28,13 +15,13 @@ def solicitar_datos_tarjeta():
     descripcion = pedir_texto('Descripción (opcional, Enter para omitir): ', obligatorio=False, largo_maximo=150)
     fecha = pedir_fecha('Fecha límite dd-mm-aaaa (opcional, Enter para omitir): ')
 
-    mostrar_resultado(*crear_tarjeta(id_lista, nombre, descripcion, fecha))
+    mostrar_resultado(*servicio_tarjetas.crear(id_lista, nombre, descripcion, fecha))
 
 
 def solicitar_modificacion_tarjeta():
     if not mostrar_tablero(elegir_proyecto()):
         return
-    tarjeta = obtener_tarjeta(pedir_entero('Id de la tarjeta a modificar: '))
+    tarjeta = servicio_tarjetas.obtener(pedir_entero('Id de la tarjeta a modificar: '))
     if not tarjeta:
         print('ERROR: No existe una tarjeta con ese Id.\n')
         return
@@ -44,21 +31,19 @@ def solicitar_modificacion_tarjeta():
     descripcion = pedir_texto(f'Descripción [{tarjeta.descriptarj or "-"}]: ', obligatorio=False, largo_maximo=150)
     fecha = pedir_fecha(f'Fecha límite dd-mm-aaaa [{formatear_fecha(tarjeta.fecha_vencimiento)}]: ')
 
-    mostrar_resultado(*modificar_tarjeta(tarjeta.id_tarjeta, nombre, descripcion, fecha))
+    mostrar_resultado(*servicio_tarjetas.modificar(tarjeta.id_tarjeta, nombre, descripcion, fecha))
 
 
 def solicitar_eliminar_tarjeta():
     if not mostrar_tablero(elegir_proyecto()):
         return
-    tarjeta = obtener_tarjeta(pedir_entero('Id de la tarjeta a eliminar: '))
+    tarjeta = servicio_tarjetas.obtener(pedir_entero('Id de la tarjeta a eliminar: '))
     if not tarjeta:
         print('ERROR: No existe una tarjeta con ese Id.\n')
         return
 
-    if confirmar(f'¿Seguro que desea eliminar "{tarjeta.nombtarj}"?'):
-        mostrar_resultado(*eliminar_tarjeta(tarjeta.id_tarjeta))
-    else:
-        print(operacion_cancelada)
+    # resumen() viene del padre ElementoTablero; nombre, tipo() y ubicacion() son de Tarjeta
+    solicitar_eliminacion(servicio_tarjetas, tarjeta.id_tarjeta, f'¿Seguro que desea eliminar la {tarjeta.resumen()}?')
 
 
 def solicitar_mover_tarjeta():
@@ -67,7 +52,7 @@ def solicitar_mover_tarjeta():
     id_tarjeta = pedir_entero('Id de la tarjeta a mover: ')
     id_lista = pedir_entero('Id de la lista de destino: ')
 
-    mostrar_resultado(*mover_tarjeta(id_tarjeta, id_lista))
+    mostrar_resultado(*servicio_tarjetas.mover(id_tarjeta, id_lista))
 
 
 def solicitar_responsable():
@@ -76,7 +61,7 @@ def solicitar_responsable():
     id_tarjeta = pedir_entero('Id de la tarjeta: ')
     rut = pedir_rut('RUT del responsable (debe participar en el proyecto): ')
 
-    mostrar_resultado(*asignar_responsable(id_tarjeta, rut))
+    mostrar_resultado(*servicio_tarjetas.asignar_responsable(id_tarjeta, rut))
 
 
 def solicitar_cambio_estado():
@@ -86,4 +71,4 @@ def solicitar_cambio_estado():
     print('Nuevo estado:')
     estado = elegir_opcion('Elija el estado: ', estados_tarjeta)
 
-    mostrar_resultado(*cambiar_estado(id_tarjeta, estado)) 
+    mostrar_resultado(*servicio_tarjetas.cambiar_estado(id_tarjeta, estado)) 
