@@ -49,30 +49,31 @@ Las reglas principales también están protegidas en la base de datos con restri
 
 ```
 Gestion_proyecto_tello_AP_C2_POO_2/
-├── app.py                          # Punto de entrada
-├── Diagrama_Clases_Trello_v3.drawio.png
-├── auxiliares/                     # Herramientas compartidas
-│   ├── data_aplicacion.py          # Nombre, versión, estados y roles válidos
-│   ├── entradas.py                 # Lectura segura de textos, números, fechas y confirmaciones
-│   ├── menu.py                     # Opciones de los menús
-│   ├── mensajes.py                 # Mensajes reutilizables
-│   └── validaciones.py             # Clase Rut, validación de correo y contraseña segura
-├── datos/                          # Capa de datos (acceso a MySQL)
-│   ├── conexion.py                 # Conexión usando variables del .env
+├── app.py                                  # Punto de entrada
+├── Diagrama_Clases_Trello_v4.drawio.png    # Diagrama de clases del dominio (editable)
+├── Diagrama_Clases_Trello_v4_capas.png     # Diagrama de clases de las capas
+├── Diagrama_Clases_Trello_v4.drawio        # Archivo draw.io con las dos páginas
+├── Informe_Diseno_Trello_v6.pdf            # Informe de diseño
+├── auxiliares/                             # Herramientas compartidas
+│   ├── data_aplicacion.py                  # Nombre, versión, estados y roles válidos
+│   ├── entradas.py                         # Lectura segura de textos, números, fechas y confirmaciones
+│   ├── menu.py                             # Opciones de los menús
+│   ├── mensajes.py                         # Mensajes reutilizables
+│   └── validaciones.py                     # Clase Rut, validación de correo y contraseña segura
+├── datos/                                  # Capa de datos (acceso a MySQL)
+│   ├── conexion.py                         # Conexión usando variables del .env
 │   ├── modelos/
-│   │   ├── models.py               # Clases que representan las tablas (ORM Peewee)
-│   │   └── dominio.py              # Estados de tarjeta y roles de proyecto
-│   ├── repositorios/               # Consultas y guardado por entidad
-│   └── sql/                        # Scripts de creación, ajustes y datos de prueba
-├── negocio/                        # Capa de negocio (reglas del sistema)
-│   ├── servicio_base.py            # Clase abstracta de todos los servicios
-│   └── negocio_*.py                # Un servicio por entidad
-├── presentacion/                   # Capa de presentación (menús de consola)
-│   ├── menu.py                     # Clases Menu y MenuPrincipal
-│   ├── presentacion_sesion.py      # Inicio de sesión
-│   └── presentacion_*.py           # Pantallas de cada módulo
-└── docs/
-    └── Informe_Diseno_Trello_v5.pdf
+│   │   ├── models.py                       # Clases que representan las tablas (ORM Peewee)
+│   │   └── dominio.py                      # Estados de tarjeta y roles de proyecto
+│   ├── repositorios/                       # Consultas y guardado por entidad
+│   └── sql/                                # Scripts de creación, ajustes y datos de prueba
+├── negocio/                                # Capa de negocio (reglas del sistema)
+│   ├── servicio_base.py                    # Clase abstracta de todos los servicios
+│   └── negocio_*.py                        # Un servicio por entidad
+└── presentacion/                           # Capa de presentación (menús de consola)
+    ├── menu.py                             # Clases Menu y MenuPrincipal
+    ├── presentacion_sesion.py              # Inicio de sesión
+    └── presentacion_*.py                   # Pantallas de cada módulo
 ```
 
 Cada capa solo se comunica con la de abajo: **presentación → negocio → datos**.
@@ -218,8 +219,10 @@ Se usa versionado semántico **Mayor.Menor.Parche**:
 ---
 
 ## Documentación
-- Informe de diseño: `docs/Informe_Diseno_Trello_v5.pdf`
-- Diagrama de clases (editable en draw.io): `Diagrama_Clases_Trello_v3.drawio.png` (en la raíz del proyecto)
+- Informe de diseño: `Informe_Diseno_Trello_v6.pdf`
+- Diagrama de clases del dominio (editable en draw.io): `Diagrama_Clases_Trello_v4.drawio.png`
+- Diagrama de clases de las capas: `Diagrama_Clases_Trello_v4_capas.png`
+- Archivo draw.io con las dos páginas: `Diagrama_Clases_Trello_v4.drawio`
 
 ## Autor
 **Halbert Miranda y Benjamin Arriagada** · Programación Orientada a Objetos · INACAP 
