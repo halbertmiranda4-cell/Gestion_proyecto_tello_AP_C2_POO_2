@@ -2,7 +2,7 @@ import sys
 from negocio.negocio_usuarios import ServicioUsuarios
 from presentacion.presentacion_usuarios import pedir_contrasena, solicitar_datos_usuario
 from presentacion.presentacion_comun import mostrar_resultado
-from auxiliares import menu_sesion, opcion_invalida, pedir_texto
+from auxiliares import menu_sesion, opcion_invalida, mensaje_error, pedir_texto
 
 
 class Sesion:
@@ -12,6 +12,7 @@ class Sesion:
     Desde afuera solo se puede consultar quién inició sesión (propiedad usuario_actual)."""
 
     MAXIMO_INTENTOS = 3
+    __conectado = None   # atributo privado de clase: quién inició sesión en la aplicación
 
     def __init__(self):
         self.__servicio = ServicioUsuarios()
@@ -21,6 +22,11 @@ class Sesion:
     @property
     def usuario_actual(self):
         return self.__usuario
+
+    @classmethod
+    def usuario_conectado(cls):
+        """Permite a otras pantallas saber quién inició sesión (ej: autor de un comentario)."""
+        return cls.__conectado
 
     @property
     def iniciada(self) -> bool:
@@ -34,6 +40,7 @@ class Sesion:
         mostrar_resultado(exito, mensaje)
         if exito:
             self.__usuario = usuario
+            Sesion.__conectado = usuario
         else:
             self.__intentos += 1
             restantes = self.MAXIMO_INTENTOS - self.__intentos
@@ -49,16 +56,20 @@ class Sesion:
                 return False
             for clave, valor in menu_sesion.items():
                 print(f'[{clave}] - {valor}')
-            match input('\nIngrese su opción [0-2]: '):
-                case '1':
-                    self.__intentar_ingreso()
-                case '2':
-                    solicitar_datos_usuario()
-                    print('Ahora puede iniciar sesión con su correo y contraseña.\n')
-                case '0':
-                    return False
-                case _:
-                    print(opcion_invalida)
+            try:
+                match input('\nIngrese su opción [0-2]: '):
+                    case '1':
+                        self.__intentar_ingreso()
+                    case '2':
+                        solicitar_datos_usuario()
+                        print('Ahora puede iniciar sesión con su correo y contraseña.\n')
+                    case '0':
+                        return False
+                    case _:
+                        print(opcion_invalida)
+            except Exception as error:
+                # Ej: MySQL apagado. Se muestra el error sin cerrar la aplicación.
+                print(f'{mensaje_error}{error}\n')
         return True
 
 

@@ -35,13 +35,14 @@ def mostrar_tablero(id_proyecto: int) -> bool:
             print('   (vacía)')
             continue
         tabla = PrettyTable()
-        tabla.field_names = ['Id', 'Tarjeta', 'Estado', 'Vence', 'Responsable']
+        tabla.field_names = ['Id', 'Tarjeta', 'Estado', 'Vence', 'Responsable', 'Etiquetas']
         for tarjeta in lista.tarjetas:
             vence = formatear_fecha(tarjeta.fecha_vencimiento)
             if tarjeta.esta_vencida():
                 vence += ' VENCIDA'
+            etiquetas = ', '.join(etiqueta.nometiq for etiqueta in tarjeta.etiquetas) or '-'
             tabla.add_row([tarjeta.id_tarjeta, tarjeta.nombre, tarjeta.estado_actual.etiqueta(), vence,
-                           tarjeta.nombre_responsable])
+                           tarjeta.nombre_responsable, etiquetas])
         print(tabla)
     print()
     return True

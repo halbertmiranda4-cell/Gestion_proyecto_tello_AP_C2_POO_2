@@ -2,6 +2,7 @@ from datos.modelos.models import Tablero, Lista
 from datos.repositorios.repositorio_proyectos import RepositorioProyectos
 from datos.repositorios.repositorio_tableros import RepositorioTableros, RepositorioListas
 from datos.repositorios.repositorio_tarjetas import RepositorioTarjetas
+from datos.repositorios.repositorio_etiquetas import RepositorioTarjetaEtiqueta
 from negocio.servicio_base import ServicioBase
 
 
@@ -13,6 +14,7 @@ class ServicioTableros(ServicioBase):
         self.__proyectos = RepositorioProyectos()
         self.__listas = RepositorioListas()
         self.__tarjetas = RepositorioTarjetas()
+        self.__etiquetas = RepositorioTarjetaEtiqueta()
 
     def listar(self):
         return self._repositorio.listar()
@@ -37,7 +39,8 @@ class ServicioTableros(ServicioBase):
         return False, 'Un tablero no se elimina por separado: se elimina junto con su proyecto.'
 
     def obtener_tablero(self, id_proyecto: int):
-        """Retorna (proyecto, tablero, listas). Cada lista trae sus tarjetas en lista.tarjetas."""
+        """Retorna (proyecto, tablero, listas). Cada lista trae sus tarjetas en lista.tarjetas
+        y cada tarjeta trae sus etiquetas en tarjeta.etiquetas."""
         proyecto = self.__proyectos.obtener_por_id(id_proyecto)
         if not proyecto:
             return None, None, []
@@ -47,6 +50,8 @@ class ServicioTableros(ServicioBase):
         listas = self.__listas.listar_por_tablero(tablero)
         for lista in listas:
             lista.tarjetas = self.__tarjetas.listar_por_lista(lista)
+            for tarjeta in lista.tarjetas:
+                tarjeta.etiquetas = self.__etiquetas.etiquetas_de_tarjeta(tarjeta)
         return proyecto, tablero, listas
 
 

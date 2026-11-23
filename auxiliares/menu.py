@@ -9,7 +9,8 @@ menu_superior = {
     '2': 'Gestión Proyectos',
     '3': 'Gestión Tableros y Listas',
     '4': 'Gestión Tarjetas',
-    '5': 'Reporte de avance',
+    '5': 'Gestión Etiquetas',
+    '6': 'Reporte de avance',
     '0': 'Salir'
 }
 
@@ -48,5 +49,18 @@ menu_tarjetas = {
     '4': 'Mover tarjeta a otra lista',
     '5': 'Asignar responsable',
     '6': 'Cambiar estado',
+    '7': 'Agregar comentario',
+    '8': 'Ver comentarios de una tarjeta',
+    '9': 'Eliminar comentario',
+    '0': 'Volver al menú anterior'
+}
+
+menu_etiquetas = {
+    '1': 'Ver etiquetas de un proyecto',
+    '2': 'Crear etiqueta',
+    '3': 'Modificar etiqueta',
+    '4': 'Eliminar etiqueta',
+    '5': 'Asignar etiqueta a una tarjeta',
+    '6': 'Quitar etiqueta de una tarjeta',
     '0': 'Volver al menú anterior'
 } 

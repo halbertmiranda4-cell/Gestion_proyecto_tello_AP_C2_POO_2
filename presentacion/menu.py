@@ -7,6 +7,7 @@ from auxiliares import (
     menu_proyectos,
     menu_tableros,
     menu_tarjetas,
+    menu_etiquetas,
     opcion_invalida,
     menu_anterior,
     mensaje_error
@@ -40,6 +41,19 @@ from presentacion.presentacion_tarjetas import (
     solicitar_mover_tarjeta,
     solicitar_responsable,
     solicitar_cambio_estado
+)
+from presentacion.presentacion_comentarios import (
+    solicitar_comentario,
+    ver_comentarios,
+    solicitar_eliminar_comentario
+)
+from presentacion.presentacion_etiquetas import (
+    ver_etiquetas,
+    solicitar_datos_etiqueta,
+    solicitar_modificacion_etiqueta,
+    solicitar_eliminar_etiqueta,
+    solicitar_asignar_etiqueta,
+    solicitar_quitar_etiqueta
 )
 from presentacion.presentacion_reporte import mostrar_reporte
 from presentacion.presentacion_sesion import iniciar_sesion
@@ -144,7 +158,18 @@ def menu_principal():
             '3': solicitar_eliminar_tarjeta,
             '4': solicitar_mover_tarjeta,
             '5': solicitar_responsable,
-            '6': solicitar_cambio_estado
+            '6': solicitar_cambio_estado,
+            '7': solicitar_comentario,
+            '8': ver_comentarios,
+            '9': solicitar_eliminar_comentario
         }),
-        '5': mostrar_reporte
+        '5': Menu('Gestión Etiquetas', menu_etiquetas, {
+            '1': ver_etiquetas,
+            '2': solicitar_datos_etiqueta,
+            '3': solicitar_modificacion_etiqueta,
+            '4': solicitar_eliminar_etiqueta,
+            '5': solicitar_asignar_etiqueta,
+            '6': solicitar_quitar_etiqueta
+        }),
+        '6': mostrar_reporte
     }).ejecutar() 

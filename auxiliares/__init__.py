@@ -1,5 +1,5 @@
 from auxiliares.mensajes import opcion_invalida, menu_anterior, en_construccion, mensaje_error, operacion_cancelada
-from auxiliares.data_aplicacion import nombre_aplicacion, version_aplicacion, estados_tarjeta, roles_proyecto
-from auxiliares.menu import menu_sesion, menu_superior, menu_usuarios, menu_proyectos, menu_tableros, menu_tarjetas
+from auxiliares.data_aplicacion import nombre_aplicacion, version_aplicacion, estados_tarjeta, roles_proyecto, colores_etiqueta
+from auxiliares.menu import menu_sesion, menu_superior, menu_usuarios, menu_proyectos, menu_tableros, menu_tarjetas, menu_etiquetas
 from auxiliares.validaciones import Rut, validar_rut, formatear_rut, validar_correo, validar_contrasena
-from auxiliares.entradas import pedir_texto, pedir_entero, pedir_fecha, elegir_opcion, confirmar 
+from auxiliares.entradas import pedir_texto, pedir_entero, pedir_fecha, elegir_opcion, confirmar
