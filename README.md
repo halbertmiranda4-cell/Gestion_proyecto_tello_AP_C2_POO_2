@@ -20,9 +20,9 @@ Aplicación de consola en Python para gestionar proyectos mediante tableros, lis
 
 ## Reglas de negocio
 
-- Para usar la aplicación hay que **iniciar sesión** con correo y contraseña (máximo 3 intentos).
+- Para usar la aplicación hay que **iniciar sesión** con correo y contraseña (máximo 3 intentos). Sin autenticación no se accede al menú principal.
 - La contraseña debe ser segura: 8 caracteres o más, mayúscula, minúscula, número y un símbolo (@ $ # ! * &).
-- Las **contraseñas** se guardan encriptadas con **bcrypt**, nunca en texto plano.
+- Las **contraseñas** se ingresan ocultas con **maskpass** y se guardan como hash **bcrypt**, nunca en texto plano.
 - El **RUT** debe ser válido (dígito verificador, módulo 11) y no puede repetirse. El correo tampoco.
 - Quien crea un proyecto queda automáticamente como **administrador**.
 - Solo un **administrador** puede agregar participantes o eliminar el proyecto.
@@ -35,6 +35,11 @@ Aplicación de consola en Python para gestionar proyectos mediante tableros, lis
 - Una tarjeta está **vencida** si pasó su fecha límite y no está completada.
 - No se puede eliminar una lista que todavía tiene tarjetas.
 - El RUT de un usuario no se puede modificar.
+
+### Flujo de inicio
+```
+Aplicación → Login → Validación (correo + contraseña bcrypt) → Menú Principal
+```
 
 ### Borrado lógico
 Los registros **no se borran** de la base de datos: se marcan con `HABILITADO = 0`.
@@ -90,7 +95,7 @@ Los errores inesperados se capturan en el menú y se muestran sin cerrar la apli
 - PyMySQL: conector para MySQL
 - python-decouple: lectura de credenciales desde `.env`
 - PrettyTable: tablas en consola
-- bcrypt: encriptación de contraseñas
+- bcrypt: encriptación de contraseñas (hash)
 - maskpass: ingreso de contraseñas oculto con asteriscos
 
 ---
@@ -117,6 +122,7 @@ Con **XAMPP** encendido (Apache y MySQL), entrar a `http://localhost/phpmyadmin`
 | 2 | `2026.10.19_01.00_ajustes_restricciones.sql` | Agrega las restricciones (un tablero por proyecto, estados válidos) |
 | 3 | `2026.10.19_21.00_alter_habilitado.sql` | Agrega la columna HABILITADO (borrado lógico) |
 | 4 a 12 | `2026.10.19_02.00_insert_usuarios.sql` … `2026.10.19_02.40_insert_comentarios.sql` | Carga los datos de prueba (ejecutarlos en orden) |
+| 13 | `2026.11.23_12.00_update_contrasenas.sql` | Solo para bases creadas antes: reemplaza contraseñas en texto plano por hash bcrypt |
 
 ### 4. Crear un usuario de MySQL para la aplicación
 ```sql
@@ -155,8 +161,8 @@ Trello-POO - v1.4.0
 
 Después de iniciar sesión se muestra el menú principal:
 ```
-Trello-POO - v1.4.0 · Sesión: Halbert
-=====================================
+Trello-POO - v1.4.0 · Sesión: Ana Torres
+========================================
 
 [1] - Gestión Usuarios
 [2] - Gestión Proyectos
@@ -173,10 +179,16 @@ Los scripts de prueba crean:
 - **"Sitio web Cafetería"**: tablero con 3 listas y 5 tarjetas en distintos estados, incluida una **vencida** y una **sin responsable**.
 - **"Sistema de inventario"**: sin tablero, para probar su creación desde la aplicación.
 
-Los usuarios de prueba se cargan sin contraseña encriptada, por lo que **no pueden iniciar sesión**. Para entrar por primera vez, usar la opción **Registrarse** en la pantalla de acceso. Luego se les puede asignar una contraseña desde **Gestión Usuarios → Modificar usuario**.
+Los usuarios de prueba tienen la contraseña guardada como hash bcrypt. Para entrar con ellos se usa su correo y la contraseña `Trello#2026` (ej: `ana.torres@trello.cl`).
+
+| Usuario | Correo | Rol en "Sitio web Cafetería" |
+|---|---|---|
+| Ana Torres | `ana.torres@trello.cl` | administrador |
+| Bruno Díaz | `bruno.diaz@trello.cl` | miembro |
+| Carla Muñoz | `carla.munoz@trello.cl` | miembro |
+| Diego Rojas | `diego.rojas@trello.cl` | (no participa) |
 
 RUTs válidos de prueba para registrar usuarios nuevos: `22.340.574-6`, `22.450.500-0`, `12.345.678-5`.
-Ejemplo de contraseña segura: `Trello#2026`.
 
 ---
 
@@ -195,7 +207,7 @@ Se usa versionado semántico **Mayor.Menor.Parche**:
 | v1.1.0 | Modificar y eliminar (borrado lógico) usuarios, proyectos, listas y tarjetas; captura de errores |
 | v1.2.0 | Negocio, repositorios y menú convertidos a clases (abstracción, encapsulamiento, herencia y polimorfismo) |
 | v1.3.0 | Herencia de dominio: estados de tarjeta, roles de proyecto y `ElementoTablero` (padre de Lista y Tarjeta); permisos por rol |
-| v1.4.0 | Inicio de sesión con correo y contraseña (máximo 3 intentos); validación de contraseña segura |
+| v1.4.0 | Inicio de sesión con correo y contraseña (máximo 3 intentos); validación de contraseña segura; usuarios de prueba con hash bcrypt |
 
 ---
 
@@ -225,4 +237,4 @@ Se usa versionado semántico **Mayor.Menor.Parche**:
 - Archivo draw.io con las dos páginas: `Diagrama_Clases_Trello_v4.drawio`
 
 ## Autor
-**Halbert Miranda y Benjamin Arriagada** · Programación Orientada a Objetos · INACAP 
+**Halbert Miranda y Benjamin Arriagada** · Programación Orientada a Objetos · INACAP
