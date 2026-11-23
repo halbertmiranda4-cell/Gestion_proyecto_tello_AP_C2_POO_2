@@ -57,10 +57,10 @@ Los usuarios, proyectos, listas y tarjetas **no se borran** de la base de datos:
 ```
 Gestion_proyecto_tello_AP_C2_POO_2/
 ├── app.py                                  # Punto de entrada
-├── Diagrama_Clases_Trello_v4.drawio.png    # Diagrama de clases del dominio (editable)
-├── Diagrama_Clases_Trello_v4_capas.png     # Diagrama de clases de las capas
-├── Diagrama_Clases_Trello_v4.drawio        # Archivo draw.io con las dos páginas
-├── Informe_Diseno_Trello_v6.pdf            # Informe de diseño
+├── Diagrama_Clases_Trello_v5.drawio.png    # Diagrama de clases del dominio (editable)
+├── Diagrama_Clases_Trello_v5_capas.png     # Diagrama de clases de las capas
+├── Diagrama_Clases_Trello_v5.drawio        # Archivo draw.io con las dos páginas
+├── Informe_Diseno_Trello_v7.pdf            # Informe de diseño
 ├── auxiliares/                             # Mensajes, validaciones, constantes, configuración y funciones auxiliares
 │   ├── data_aplicacion.py                  # Nombre, versión, estados, roles y colores válidos
 │   ├── entradas.py                         # Lectura segura de textos, números, fechas y confirmaciones
@@ -244,7 +244,7 @@ Se usa versionado semántico **Mayor.Menor.Parche** (Mayor: cambios que rompen l
 ---
 
 ## Documentación
-- Informe de diseño: `Informe_Diseno_Trello_v6.pdf`
-- Diagrama de clases del dominio (editable en draw.io): `Diagrama_Clases_Trello_v4.drawio.png`
-- Diagrama de clases de las capas: `Diagrama_Clases_Trello_v4_capas.png`
-- Archivo draw.io con las dos páginas: `Diagrama_Clases_Trello_v4.drawio` 
+- Informe de diseño: `Informe_Diseno_Trello_v7.pdf`
+- Diagrama de clases del dominio (editable en draw.io): `Diagrama_Clases_Trello_v5.drawio.png`
+- Diagrama de clases de las capas: `Diagrama_Clases_Trello_v5_capas.png`
+- Archivo draw.io con las dos páginas: `Diagrama_Clases_Trello_v5.drawio` 
